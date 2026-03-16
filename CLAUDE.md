@@ -37,11 +37,11 @@ AI-powered mobile planner app that suggests fresh activities, roasts/hypes users
 
 ## Build Progress
 - [x] Phase 1 — Scaffold (Expo init, types, Zustand store, theme, orb colors, tab screens)
-- [ ] Phase 2 — Auth + Onboarding
-- [ ] Phase 3 — Core Task System
-- [ ] Phase 4 — Home + Daily Focus
-- [ ] Phase 5 — Orb Component (animated)
-- [ ] Phase 6 — AI Features
+- [x] Phase 2 — Auth + Onboarding (login, 7-screen onboarding, auth routing)
+- [x] Phase 3 — Core Task System (CRUD, NLP parsing, quick-add, task card, recurrence, detail/edit screens)
+- [ ] Phase 4 — Home + Daily Focus (energy check-in modal, daily focus algorithm refinement)
+- [ ] Phase 5 — Orb Component (animated with Reanimated 3)
+- [ ] Phase 6 — AI Features (Supabase Edge Functions, suggestions, motivations)
 - [ ] Phase 7 — Notifications
 - [ ] Phase 8 — Reward System
 - [ ] Phase 9 — Home Screen Widget
@@ -55,6 +55,15 @@ AI-powered mobile planner app that suggests fresh activities, roasts/hypes users
 - `constants/lampy-messages.ts` — Roast/Hype/Real message templates
 - `components/orb/OrbColors.ts` — Orb color states + animation configs
 - `lib/supabase.ts` — Supabase client
+- `lib/ai.ts` — NLP task parsing (local dev fallback)
+- `hooks/useTasks.ts` — Task CRUD hook with Supabase sync
+- `components/tasks/TaskCard.tsx` — Task display card
+- `components/tasks/TaskQuickAdd.tsx` — Floating add button + NLP input
+- `components/tasks/RecurrenceSelector.tsx` — Recurring rule picker
+- `app/task/[id].tsx` — Task detail screen
+- `app/task/edit/[id].tsx` — Task edit screen
+- `app/(auth)/login.tsx` — Supabase email auth
+- `app/(auth)/onboarding/*.tsx` — 7-screen onboarding flow
 
 ## GitHub
 - Repo: https://github.com/handsmaple/Lampy
