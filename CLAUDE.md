@@ -39,8 +39,8 @@ AI-powered mobile planner app that suggests fresh activities, roasts/hypes users
 - [x] Phase 1 — Scaffold (Expo init, types, Zustand store, theme, orb colors, tab screens)
 - [x] Phase 2 — Auth + Onboarding (login, 7-screen onboarding, auth routing)
 - [x] Phase 3 — Core Task System (CRUD, NLP parsing, quick-add, task card, recurrence, detail/edit screens)
-- [ ] Phase 4 — Home + Daily Focus (energy check-in modal, daily focus algorithm refinement)
-- [ ] Phase 5 — Orb Component (animated with Reanimated 3)
+- [x] Phase 4 — Home + Daily Focus (energy check-in modal, Lampy banner, energy-aware task limits)
+- [x] Phase 5 — Orb Component (animated pulse/glow/color transitions with Reanimated, milestone burst)
 - [ ] Phase 6 — AI Features (Supabase Edge Functions, suggestions, motivations)
 - [ ] Phase 7 — Notifications
 - [ ] Phase 8 — Reward System
@@ -54,6 +54,10 @@ AI-powered mobile planner app that suggests fresh activities, roasts/hypes users
 - `constants/theme.ts` — Design system (colors, spacing, typography)
 - `constants/lampy-messages.ts` — Roast/Hype/Real message templates
 - `components/orb/OrbColors.ts` — Orb color states + animation configs
+- `components/orb/LampyOrb.tsx` — Animated glow orb (Reanimated) + LampyOrbMini
+- `components/checkin/EnergyCheckin.tsx` — Morning energy check-in modal
+- `components/lampy/LampyBanner.tsx` — Animated slide-in motivation banner
+- `hooks/useEnergy.ts` — Energy check-in hook with Supabase sync
 - `lib/supabase.ts` — Supabase client
 - `lib/ai.ts` — NLP task parsing (local dev fallback)
 - `hooks/useTasks.ts` — Task CRUD hook with Supabase sync

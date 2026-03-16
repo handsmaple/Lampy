@@ -15,6 +15,7 @@ import { TaskCard } from '@/components/tasks/TaskCard';
 import { TaskQuickAdd } from '@/components/tasks/TaskQuickAdd';
 import { EnergyCheckinModal } from '@/components/checkin/EnergyCheckin';
 import { LampyBanner } from '@/components/lampy/LampyBanner';
+import { LampyOrb } from '@/components/orb/LampyOrb';
 import { generateMessage } from '@/constants/lampy-messages';
 import type { EnergyLevel, LampyMode } from '@/types';
 
@@ -159,13 +160,11 @@ export default function HomeScreen() {
     }
   };
 
-  // Orb color mapping for placeholder
-  const orbColors: Record<string, string> = {
+  // Orb colors for energy badge
+  const orbBadgeColors: Record<string, string> = {
     LOW: Colors.brand.blue,
     MEDIUM: Colors.brand.secondary,
     HIGH: Colors.brand.primary,
-    IDLE: '#FFFFFF40',
-    MILESTONE: Colors.brand.accent,
   };
 
   return (
@@ -194,25 +193,9 @@ export default function HomeScreen() {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        {/* Orb placeholder — Phase 5 will replace with animated orb */}
-        <View
-          style={[
-            styles.orbPlaceholder,
-            {
-              backgroundColor: (orbColors[orbState] ?? orbColors.IDLE) + '20',
-              borderColor: orbColors[orbState] ?? orbColors.IDLE,
-            },
-          ]}
-        >
-          <View
-            style={[
-              styles.orbInner,
-              { backgroundColor: orbColors[orbState] ?? orbColors.IDLE },
-            ]}
-          />
-          <Text style={[styles.orbLabel, { color: theme.textMuted }]}>
-            {orbState === 'IDLE' ? '...' : orbState}
-          </Text>
+        {/* Animated Lampy Orb */}
+        <View style={styles.orbContainer}>
+          <LampyOrb state={orbState} size={120} />
         </View>
 
         {/* Greeting */}
@@ -230,14 +213,14 @@ export default function HomeScreen() {
           <Pressable
             style={[
               styles.energyBadge,
-              { backgroundColor: orbColors[todayCheckin.level] + '15' },
+              { backgroundColor: orbBadgeColors[todayCheckin.level] + '15' },
             ]}
             onPress={() => setShowEnergyCheckin(true)}
           >
             <Text style={styles.energyEmoji}>
               {todayCheckin.level === 'LOW' ? '😴' : todayCheckin.level === 'HIGH' ? '🔥' : '😊'}
             </Text>
-            <Text style={[styles.energyText, { color: orbColors[todayCheckin.level] }]}>
+            <Text style={[styles.energyText, { color: orbBadgeColors[todayCheckin.level] }]}>
               Energy: {todayCheckin.level}
             </Text>
             <Text style={[styles.energyChange, { color: theme.textMuted }]}>
@@ -314,26 +297,9 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.xl,
     paddingBottom: 120,
   },
-  orbPlaceholder: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    borderWidth: 2,
+  orbContainer: {
     alignSelf: 'center',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: Spacing.xl,
-  },
-  orbInner: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    opacity: 0.6,
-  },
-  orbLabel: {
-    fontSize: Typography.sizes.xs,
-    fontWeight: Typography.weights.medium,
-    marginTop: Spacing.xs,
+    marginBottom: Spacing.lg,
   },
   greeting: {
     fontSize: Typography.sizes.xxl,
