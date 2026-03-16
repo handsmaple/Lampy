@@ -3,6 +3,7 @@
 // ============================================
 // Displays a single task with swipe-to-complete/skip.
 
+import { memo } from 'react';
 import { StyleSheet, View, Text, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Colors, Spacing, Typography, Radius } from '@/constants/theme';
@@ -22,7 +23,7 @@ const PRIORITY_COLORS = {
   LOW: '#10B981',
 };
 
-export function TaskCard({ task, theme, onComplete, onSkip }: TaskCardProps) {
+export const TaskCard = memo(function TaskCard({ task, theme, onComplete, onSkip }: TaskCardProps) {
   const router = useRouter();
 
   const formatDueInfo = () => {
@@ -70,6 +71,8 @@ export function TaskCard({ task, theme, onComplete, onSkip }: TaskCardProps) {
         },
       ]}
       onPress={() => router.push(`/task/${task.id}` as any)}
+      accessibilityRole="button"
+      accessibilityLabel={`Task: ${task.title}, ${task.priority} priority${isOverdue ? ', overdue' : ''}`}
     >
       <View style={styles.row}>
         {/* Complete button */}
@@ -82,6 +85,9 @@ export function TaskCard({ task, theme, onComplete, onSkip }: TaskCardProps) {
             },
           ]}
           onPress={() => !isDone && onComplete(task.id)}
+          accessibilityRole="checkbox"
+          accessibilityState={{ checked: isDone }}
+          accessibilityLabel={`Mark ${task.title} as complete`}
         >
           {isDone && <Text style={styles.checkmark}>✓</Text>}
         </Pressable>
@@ -145,14 +151,19 @@ export function TaskCard({ task, theme, onComplete, onSkip }: TaskCardProps) {
 
         {/* Skip button */}
         {!isDone && task.status === 'PENDING' && (
-          <Pressable style={styles.skipBtn} onPress={() => onSkip(task.id)}>
+          <Pressable
+            style={styles.skipBtn}
+            onPress={() => onSkip(task.id)}
+            accessibilityRole="button"
+            accessibilityLabel={`Skip ${task.title}`}
+          >
             <Text style={[styles.skipText, { color: theme.textMuted }]}>Skip</Text>
           </Pressable>
         )}
       </View>
     </Pressable>
   );
-}
+});
 
 const styles = StyleSheet.create({
   card: {

@@ -112,6 +112,8 @@ export function TaskQuickAdd() {
       <Pressable
         style={[styles.fab, Shadows.lg, { backgroundColor: Colors.brand.primary }]}
         onPress={handleOpen}
+        accessibilityRole="button"
+        accessibilityLabel="Add new task"
       >
         <Text style={styles.fabText}>+</Text>
       </Pressable>
