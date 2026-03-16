@@ -44,8 +44,8 @@ AI-powered mobile planner app that suggests fresh activities, roasts/hypes users
 - [x] Phase 6 — AI Features (Supabase Edge Functions, suggestions, motivations, 120+ local fallbacks)
 - [x] Phase 7 — Notifications (local scheduling, 4 trigger types, quiet hours, personality-driven)
 - [x] Phase 8 — Reward System (points, streaks, orb levels, unlockables gallery, celebration modals)
-- [ ] Phase 9 — Home Screen Widget
-- [ ] Phase 10 — Profile + Settings
+- [x] Phase 9 — Home Screen Widget (data layer, in-app preview, expo-widgets ready)
+- [x] Phase 10 — Profile + Settings (editable name, tone, interests, schedule, roast intensity, sign out)
 - [ ] Phase 11 — Polish
 
 ## Key Files
@@ -67,6 +67,12 @@ AI-powered mobile planner app that suggests fresh activities, roasts/hypes users
 - `components/suggestions/SuggestionCard.tsx` — Accept/dismiss/save suggestion
 - `components/rewards/RewardModal.tsx` — Reward celebration + unlock reveal + level up modals
 - `supabase/functions/lampy-ai/index.ts` — Edge Function Claude API proxy
+- `hooks/useProfile.ts` — Profile update logic with Supabase sync
+- `components/profile/InterestPicker.tsx` — Interest tag editor modal
+- `components/profile/SchedulePicker.tsx` — Wake/sleep time editor modal
+- `components/widget/WidgetPreview.tsx` — In-app widget preview (medium + small)
+- `lib/widget-data.ts` — Widget data builder + AsyncStorage sync
+- `widgets/lampy-widget.tsx` — expo-widgets definition (ready to activate)
 - `hooks/useTasks.ts` — Task CRUD hook with Supabase sync
 - `components/tasks/TaskCard.tsx` — Task display card
 - `components/tasks/TaskQuickAdd.tsx` — Floating add button + NLP input
