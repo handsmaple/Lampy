@@ -1,0 +1,95 @@
+// ============================================
+// Lampy — Energy Hook
+// ============================================
+// Manages daily energy check-ins with Supabase sync.
+// Determines whether to show the morning check-in prompt.
+
+import { useCallback } from 'react';
+import { Alert } from 'react-native';
+import { useUserStore } from '@/store/userStore';
+import { supabase } from '@/lib/supabase';
+import type { EnergyCheckin, EnergyLevel } from '@/types';
+
+export function useEnergy() {
+  const user = useUserStore((s) => s.user);
+  const todayCheckin = useUserStore((s) => s.todayCheckin);
+  const setTodayCheckin = useUserStore((s) => s.setTodayCheckin);
+  const setShowEnergyCheckin = useUserStore((s) => s.setShowEnergyCheckin);
+
+  const today = new Date().toISOString().split('T')[0];
+
+  // Check if user already did today's check-in
+  const hasCheckedInToday = todayCheckin?.date === today;
+
+  // Fetch today's check-in from Supabase (called on app load)
+  const fetchTodayCheckin = useCallback(async () => {
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from('energy_checkins')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('date', today)
+      .single();
+
+    if (data && !error) {
+      setTodayCheckin(data);
+    } else {
+      // No check-in today → show the prompt
+      setShowEnergyCheckin(true);
+    }
+  }, [user, today, setTodayCheckin, setShowEnergyCheckin]);
+
+  // Submit today's energy level
+  const submitCheckin = useCallback(
+    async (level: EnergyLevel) => {
+      if (!user) return;
+
+      const checkin: EnergyCheckin = {
+        id: crypto.randomUUID?.() ?? `checkin-${Date.now()}`,
+        user_id: user.id,
+        level,
+        date: today,
+        logged_at: new Date().toISOString(),
+      };
+
+      // Optimistic update — also updates orbState via store
+      setTodayCheckin(checkin);
+
+      const { error } = await supabase.from('energy_checkins').upsert(checkin);
+      if (error) {
+        console.error('Failed to save energy check-in:', error);
+        Alert.alert('Error', 'Failed to save your energy check-in.');
+      }
+    },
+    [user, today, setTodayCheckin]
+  );
+
+  // Determine if we should show the morning prompt
+  // Show if: user exists, hasn't checked in today, and it's after their wake time
+  const shouldShowCheckin = useCallback(() => {
+    if (!user || hasCheckedInToday) return false;
+
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+
+    // Parse wake_time (e.g., "07:00")
+    const [wakeHour, wakeMinute] = (user.wake_time ?? '07:00').split(':').map(Number);
+
+    // Show check-in from wake time until 2 hours after
+    const wakeMinutes = wakeHour * 60 + wakeMinute;
+    const currentMinutes = currentHour * 60 + currentMinute;
+    const windowEnd = wakeMinutes + 120; // 2 hour window
+
+    return currentMinutes >= wakeMinutes && currentMinutes <= windowEnd;
+  }, [user, hasCheckedInToday]);
+
+  return {
+    todayCheckin,
+    hasCheckedInToday,
+    fetchTodayCheckin,
+    submitCheckin,
+    shouldShowCheckin,
+  };
+}
