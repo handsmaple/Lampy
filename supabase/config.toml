@@ -1,0 +1,29 @@
+# ============================================
+# Lampy — Supabase CLI Configuration
+# ============================================
+# Used by `supabase` CLI for local dev and deployments.
+# Docs: https://supabase.com/docs/guides/cli/config
+
+[project]
+id = "your-project-id"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public"]
+
+[db]
+port = 54322
+major_version = 15
+
+[auth]
+enabled = true
+site_url = "exp://localhost:8081"
+
+[auth.email]
+enable_signup = true
+enable_confirmations = false
+
+[functions]
+# Edge Functions served from supabase/functions/
+verify_jwt = true
