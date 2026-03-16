@@ -19,6 +19,7 @@ import { LampyOrb } from '@/components/orb/LampyOrb';
 import { SuggestionCard } from '@/components/suggestions/SuggestionCard';
 import { generateMessage } from '@/constants/lampy-messages';
 import { useSuggestions } from '@/hooks/useSuggestions';
+import { useNotifications } from '@/hooks/useNotifications';
 import type { EnergyLevel, LampyMode } from '@/types';
 
 // --- Energy-aware task limit ---
@@ -49,15 +50,17 @@ export default function HomeScreen() {
     dismissSuggestion,
     saveSuggestion,
   } = useSuggestions();
+  const { setupPermissions } = useNotifications();
 
   const [bannerMessage, setBannerMessage] = useState<string | null>(null);
   const [bannerMode, setBannerMode] = useState<LampyMode>('HYPE');
 
-  // Fetch data on mount
+  // Fetch data on mount + setup notifications
   useEffect(() => {
     fetchTasks();
     fetchTodayCheckin();
     fetchSuggestions();
+    setupPermissions();
   }, [fetchTasks, fetchTodayCheckin, fetchSuggestions]);
 
   // Generate a suggestion once energy is checked in
