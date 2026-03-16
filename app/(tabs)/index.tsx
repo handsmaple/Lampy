@@ -16,7 +16,9 @@ import { TaskQuickAdd } from '@/components/tasks/TaskQuickAdd';
 import { EnergyCheckinModal } from '@/components/checkin/EnergyCheckin';
 import { LampyBanner } from '@/components/lampy/LampyBanner';
 import { LampyOrb } from '@/components/orb/LampyOrb';
+import { SuggestionCard } from '@/components/suggestions/SuggestionCard';
 import { generateMessage } from '@/constants/lampy-messages';
+import { useSuggestions } from '@/hooks/useSuggestions';
 import type { EnergyLevel, LampyMode } from '@/types';
 
 // --- Energy-aware task limit ---
@@ -39,6 +41,14 @@ export default function HomeScreen() {
 
   const { fetchTasks, markComplete, markSkipped } = useTasks();
   const { todayCheckin, fetchTodayCheckin, submitCheckin } = useEnergy();
+  const {
+    todaySuggestion,
+    fetchSuggestions,
+    generateNewSuggestion,
+    acceptSuggestion,
+    dismissSuggestion,
+    saveSuggestion,
+  } = useSuggestions();
 
   const [bannerMessage, setBannerMessage] = useState<string | null>(null);
   const [bannerMode, setBannerMode] = useState<LampyMode>('HYPE');
@@ -47,7 +57,15 @@ export default function HomeScreen() {
   useEffect(() => {
     fetchTasks();
     fetchTodayCheckin();
-  }, [fetchTasks, fetchTodayCheckin]);
+    fetchSuggestions();
+  }, [fetchTasks, fetchTodayCheckin, fetchSuggestions]);
+
+  // Generate a suggestion once energy is checked in
+  useEffect(() => {
+    if (todayCheckin && !todaySuggestion) {
+      generateNewSuggestion();
+    }
+  }, [todayCheckin, todaySuggestion]);
 
   // Determine energy level (default to MEDIUM if no check-in)
   const energyLevel: EnergyLevel = todayCheckin?.level ?? 'MEDIUM';
@@ -262,14 +280,28 @@ export default function HomeScreen() {
           )}
         </View>
 
-        {/* Suggestion placeholder — Phase 6 */}
-        <View style={[styles.suggestionCard, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}>
+        {/* Fresh Suggestion */}
+        <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: theme.text }]}>
             Fresh Suggestion
           </Text>
-          <Text style={[styles.placeholder, { color: theme.textMuted }]}>
-            Suggestions will appear once Lampy knows you better.
-          </Text>
+          {todaySuggestion ? (
+            <SuggestionCard
+              suggestion={todaySuggestion}
+              theme={theme}
+              onAccept={acceptSuggestion}
+              onDismiss={dismissSuggestion}
+              onSave={saveSuggestion}
+            />
+          ) : (
+            <View style={[styles.emptyCard, { backgroundColor: theme.backgroundSecondary }]}>
+              <Text style={[styles.emptyText, { color: theme.textMuted }]}>
+                {todayCheckin
+                  ? 'Generating something fresh for you...'
+                  : 'Check in your energy to unlock suggestions.'}
+              </Text>
+            </View>
+          )}
         </View>
       </ScrollView>
 
@@ -360,14 +392,5 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: Typography.sizes.sm,
     textAlign: 'center',
-  },
-  suggestionCard: {
-    borderRadius: Radius.lg,
-    borderWidth: 1,
-    padding: Spacing.lg,
-    marginBottom: Spacing.md,
-  },
-  placeholder: {
-    fontSize: Typography.sizes.sm,
   },
 });
