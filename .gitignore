@@ -34,6 +34,10 @@ yarn-error.*
 .env
 .env*.local
 
+# EAS / store credentials
+google-service-account.json
+*.keystore
+
 # typescript
 *.tsbuildinfo
 
