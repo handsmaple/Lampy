@@ -19,9 +19,12 @@ import { LampyBanner } from '@/components/lampy/LampyBanner';
 import { LampyOrb } from '@/components/orb/LampyOrb';
 import { SuggestionCard } from '@/components/suggestions/SuggestionCard';
 import { RewardModal } from '@/components/rewards/RewardModal';
+import { WidgetPreview, WidgetPreviewSmall } from '@/components/widget/WidgetPreview';
 import { generateMessage } from '@/constants/lampy-messages';
 import { useSuggestions } from '@/hooks/useSuggestions';
 import { useNotifications } from '@/hooks/useNotifications';
+import { buildWidgetData, saveWidgetData } from '@/lib/widget-data';
+import type { WidgetData } from '@/lib/widget-data';
 import type { EnergyLevel, LampyMode, Reward } from '@/types';
 
 // --- Energy-aware task limit ---
@@ -59,6 +62,7 @@ export default function HomeScreen() {
   const [bannerMode, setBannerMode] = useState<LampyMode>('HYPE');
   const [pendingReward, setPendingReward] = useState<Reward | null>(null);
   const [showRewardModal, setShowRewardModal] = useState(false);
+  const [widgetData, setWidgetData] = useState<WidgetData | null>(null);
 
   // Fetch data on mount + setup notifications
   useEffect(() => {
@@ -175,6 +179,19 @@ export default function HomeScreen() {
       }
     }
   }, [overdueCount, todayCheckin]);
+
+  // Sync widget data whenever tasks/orb/streak change
+  useEffect(() => {
+    const data = buildWidgetData(
+      tasks,
+      orbState,
+      user?.current_streak ?? 0,
+      user?.current_orb_level ?? 1,
+      user?.name
+    );
+    setWidgetData(data);
+    saveWidgetData(data);
+  }, [tasks, orbState, user?.current_streak, user?.current_orb_level]);
 
   // Time-based greeting
   const getGreeting = () => {
@@ -322,6 +339,24 @@ export default function HomeScreen() {
             </View>
           )}
         </View>
+
+        {/* Widget Preview */}
+        {widgetData && (
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>
+              Home Screen Widget
+            </Text>
+            <Text style={[styles.widgetHint, { color: theme.textMuted }]}>
+              Preview of your home screen widget
+            </Text>
+            <View style={styles.widgetPreviewRow}>
+              <View style={styles.widgetMedium}>
+                <WidgetPreview data={widgetData} theme={theme} />
+              </View>
+              <WidgetPreviewSmall data={widgetData} theme={theme} />
+            </View>
+          </View>
+        )}
       </ScrollView>
 
       {/* Floating Add Button */}
@@ -422,5 +457,17 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: Typography.sizes.sm,
     textAlign: 'center',
+  },
+  widgetHint: {
+    fontSize: Typography.sizes.xs,
+    marginBottom: Spacing.md,
+  },
+  widgetPreviewRow: {
+    flexDirection: 'row',
+    gap: Spacing.md,
+    alignItems: 'flex-start',
+  },
+  widgetMedium: {
+    flex: 1,
   },
 });
