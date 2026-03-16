@@ -4,7 +4,7 @@
 // Orb + greeting + energy check-in + Lampy banner +
 // energy-aware daily focus + quick add.
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { StyleSheet, View, Text, ScrollView, Pressable } from 'react-native';
 import { useColorScheme } from '@/components/useColorScheme';
 import { Colors, Spacing, Typography, Radius } from '@/constants/theme';
@@ -24,6 +24,8 @@ import { generateMessage } from '@/constants/lampy-messages';
 import { useSuggestions } from '@/hooks/useSuggestions';
 import { useNotifications } from '@/hooks/useNotifications';
 import { buildWidgetData, saveWidgetData } from '@/lib/widget-data';
+import { startOfflineSync } from '@/lib/offline-queue';
+import { TaskCardSkeleton } from '@/components/ui/LoadingState';
 import type { WidgetData } from '@/lib/widget-data';
 import type { EnergyLevel, LampyMode, Reward } from '@/types';
 
@@ -64,24 +66,25 @@ export default function HomeScreen() {
   const [showRewardModal, setShowRewardModal] = useState(false);
   const [widgetData, setWidgetData] = useState<WidgetData | null>(null);
 
-  // Fetch data on mount + setup notifications
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch data on mount + setup notifications + offline sync
   useEffect(() => {
-    fetchTasks();
-    fetchTodayCheckin();
-    fetchSuggestions();
-    fetchRewards();
+    Promise.all([fetchTasks(), fetchTodayCheckin(), fetchSuggestions(), fetchRewards()])
+      .finally(() => setIsLoading(false));
     setupPermissions();
+    startOfflineSync();
   }, [fetchTasks, fetchTodayCheckin, fetchSuggestions, fetchRewards]);
 
   // Handle task completion with reward
-  const handleComplete = async (taskId: string) => {
+  const handleComplete = useCallback(async (taskId: string) => {
     await markComplete(taskId);
     const reward = await rewardTaskComplete(taskId);
     if (reward) {
       setPendingReward(reward);
       setShowRewardModal(true);
     }
-  };
+  }, [markComplete, rewardTaskComplete]);
 
   // Generate a suggestion once energy is checked in
   useEffect(() => {
@@ -93,39 +96,38 @@ export default function HomeScreen() {
   // Determine energy level (default to MEDIUM if no check-in)
   const energyLevel: EnergyLevel = todayCheckin?.level ?? 'MEDIUM';
   const taskLimit = TASK_LIMITS[energyLevel];
-
-  // Get today's tasks — energy-aware limiting
   const today = new Date().toISOString().split('T')[0];
-  const todayTasks = tasks
-    .filter((t) => {
-      if (t.status !== 'PENDING') return false;
-      // Include: due today, overdue, or no date (floating tasks)
-      if (!t.due_date) return true;
-      return t.due_date <= today;
-    })
-    .sort((a, b) => {
-      // Overdue tasks always first
-      const aOverdue = a.due_date && a.due_date < today;
-      const bOverdue = b.due_date && b.due_date < today;
-      if (aOverdue && !bOverdue) return -1;
-      if (!aOverdue && bOverdue) return 1;
 
-      // Priority order
-      const priorityOrder = { HIGH: 0, MEDIUM: 1, LOW: 2 };
-      const pDiff = priorityOrder[a.priority] - priorityOrder[b.priority];
-      if (pDiff !== 0) return pDiff;
+  // Memoize today's tasks — energy-aware limiting + sorting
+  const { todayTasks, overdueCount } = useMemo(() => {
+    const filtered = tasks
+      .filter((t) => {
+        if (t.status !== 'PENDING') return false;
+        if (!t.due_date) return true;
+        return t.due_date <= today;
+      })
+      .sort((a, b) => {
+        const aOverdue = a.due_date && a.due_date < today;
+        const bOverdue = b.due_date && b.due_date < today;
+        if (aOverdue && !bOverdue) return -1;
+        if (!aOverdue && bOverdue) return 1;
 
-      // Tasks with due dates before those without
-      if (a.due_date && b.due_date) return a.due_date.localeCompare(b.due_date);
-      if (a.due_date) return -1;
-      return 1;
-    })
-    .slice(0, taskLimit);
+        const priorityOrder = { HIGH: 0, MEDIUM: 1, LOW: 2 };
+        const pDiff = priorityOrder[a.priority] - priorityOrder[b.priority];
+        if (pDiff !== 0) return pDiff;
 
-  // Count overdue tasks (for roast trigger)
-  const overdueCount = tasks.filter(
-    (t) => t.status === 'PENDING' && t.due_date && t.due_date < today
-  ).length;
+        if (a.due_date && b.due_date) return a.due_date.localeCompare(b.due_date);
+        if (a.due_date) return -1;
+        return 1;
+      })
+      .slice(0, taskLimit);
+
+    const overdue = tasks.filter(
+      (t) => t.status === 'PENDING' && t.due_date && t.due_date < today
+    ).length;
+
+    return { todayTasks: filtered, overdueCount: overdue };
+  }, [tasks, taskLimit, today]);
 
   // Handle energy check-in submission
   const handleEnergySubmit = (level: EnergyLevel) => {
@@ -270,6 +272,8 @@ export default function HomeScreen() {
               { backgroundColor: orbBadgeColors[todayCheckin.level] + '15' },
             ]}
             onPress={() => setShowEnergyCheckin(true)}
+            accessibilityRole="button"
+            accessibilityLabel={`Energy level: ${todayCheckin.level}. Tap to change.`}
           >
             <Text style={styles.energyEmoji}>
               {todayCheckin.level === 'LOW' ? '😴' : todayCheckin.level === 'HIGH' ? '🔥' : '😊'}
@@ -294,7 +298,12 @@ export default function HomeScreen() {
             </Text>
           </View>
 
-          {todayTasks.length === 0 ? (
+          {isLoading ? (
+            <>
+              <TaskCardSkeleton theme={theme} />
+              <TaskCardSkeleton theme={theme} />
+            </>
+          ) : todayTasks.length === 0 ? (
             <View style={[styles.emptyCard, { backgroundColor: theme.backgroundSecondary }]}>
               <Text style={styles.emptyEmoji}>✨</Text>
               <Text style={[styles.emptyText, { color: theme.textMuted }]}>

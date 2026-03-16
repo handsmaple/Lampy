@@ -46,7 +46,7 @@ AI-powered mobile planner app that suggests fresh activities, roasts/hypes users
 - [x] Phase 8 — Reward System (points, streaks, orb levels, unlockables gallery, celebration modals)
 - [x] Phase 9 — Home Screen Widget (data layer, in-app preview, expo-widgets ready)
 - [x] Phase 10 — Profile + Settings (editable name, tone, interests, schedule, roast intensity, sign out)
-- [ ] Phase 11 — Polish
+- [x] Phase 11 — Polish (accessibility, offline queue, loading skeletons, memoization, dark mode audit)
 
 ## Key Files
 - `types/index.ts` — All TypeScript interfaces
@@ -73,6 +73,8 @@ AI-powered mobile planner app that suggests fresh activities, roasts/hypes users
 - `components/widget/WidgetPreview.tsx` — In-app widget preview (medium + small)
 - `lib/widget-data.ts` — Widget data builder + AsyncStorage sync
 - `widgets/lampy-widget.tsx` — expo-widgets definition (ready to activate)
+- `lib/offline-queue.ts` — Offline operation queue with auto-replay
+- `components/ui/LoadingState.tsx` — Skeleton, loading, empty state, offline banner components
 - `hooks/useTasks.ts` — Task CRUD hook with Supabase sync
 - `components/tasks/TaskCard.tsx` — Task display card
 - `components/tasks/TaskQuickAdd.tsx` — Floating add button + NLP input
