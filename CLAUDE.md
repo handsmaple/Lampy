@@ -41,9 +41,9 @@ AI-powered mobile planner app that suggests fresh activities, roasts/hypes users
 - [x] Phase 3 — Core Task System (CRUD, NLP parsing, quick-add, task card, recurrence, detail/edit screens)
 - [x] Phase 4 — Home + Daily Focus (energy check-in modal, Lampy banner, energy-aware task limits)
 - [x] Phase 5 — Orb Component (animated pulse/glow/color transitions with Reanimated, milestone burst)
-- [ ] Phase 6 — AI Features (Supabase Edge Functions, suggestions, motivations)
-- [ ] Phase 7 — Notifications
-- [ ] Phase 8 — Reward System
+- [x] Phase 6 — AI Features (Supabase Edge Functions, suggestions, motivations, 120+ local fallbacks)
+- [x] Phase 7 — Notifications (local scheduling, 4 trigger types, quiet hours, personality-driven)
+- [x] Phase 8 — Reward System (points, streaks, orb levels, unlockables gallery, celebration modals)
 - [ ] Phase 9 — Home Screen Widget
 - [ ] Phase 10 — Profile + Settings
 - [ ] Phase 11 — Polish
@@ -59,7 +59,14 @@ AI-powered mobile planner app that suggests fresh activities, roasts/hypes users
 - `components/lampy/LampyBanner.tsx` — Animated slide-in motivation banner
 - `hooks/useEnergy.ts` — Energy check-in hook with Supabase sync
 - `lib/supabase.ts` — Supabase client
-- `lib/ai.ts` — NLP task parsing (local dev fallback)
+- `lib/ai.ts` — NLP task parsing + AI suggestion/motivation generation (local fallbacks)
+- `lib/notifications.ts` — Notification scheduling, triggers, quiet hours
+- `hooks/useNotifications.ts` — Foreground listener, tap handler, auto-refresh
+- `hooks/useSuggestions.ts` — Suggestion CRUD, max 1/day, accept→task
+- `hooks/useRewards.ts` — Points, streaks, orb levels, unlockable purchases
+- `components/suggestions/SuggestionCard.tsx` — Accept/dismiss/save suggestion
+- `components/rewards/RewardModal.tsx` — Reward celebration + unlock reveal + level up modals
+- `supabase/functions/lampy-ai/index.ts` — Edge Function Claude API proxy
 - `hooks/useTasks.ts` — Task CRUD hook with Supabase sync
 - `components/tasks/TaskCard.tsx` — Task display card
 - `components/tasks/TaskQuickAdd.tsx` — Floating add button + NLP input

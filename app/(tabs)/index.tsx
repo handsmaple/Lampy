@@ -11,16 +11,18 @@ import { Colors, Spacing, Typography, Radius } from '@/constants/theme';
 import { useUserStore } from '@/store/userStore';
 import { useTasks } from '@/hooks/useTasks';
 import { useEnergy } from '@/hooks/useEnergy';
+import { useRewards } from '@/hooks/useRewards';
 import { TaskCard } from '@/components/tasks/TaskCard';
 import { TaskQuickAdd } from '@/components/tasks/TaskQuickAdd';
 import { EnergyCheckinModal } from '@/components/checkin/EnergyCheckin';
 import { LampyBanner } from '@/components/lampy/LampyBanner';
 import { LampyOrb } from '@/components/orb/LampyOrb';
 import { SuggestionCard } from '@/components/suggestions/SuggestionCard';
+import { RewardModal } from '@/components/rewards/RewardModal';
 import { generateMessage } from '@/constants/lampy-messages';
 import { useSuggestions } from '@/hooks/useSuggestions';
 import { useNotifications } from '@/hooks/useNotifications';
-import type { EnergyLevel, LampyMode } from '@/types';
+import type { EnergyLevel, LampyMode, Reward } from '@/types';
 
 // --- Energy-aware task limit ---
 const TASK_LIMITS: Record<EnergyLevel, number> = {
@@ -42,6 +44,7 @@ export default function HomeScreen() {
 
   const { fetchTasks, markComplete, markSkipped } = useTasks();
   const { todayCheckin, fetchTodayCheckin, submitCheckin } = useEnergy();
+  const { rewardTaskComplete, fetchRewards } = useRewards();
   const {
     todaySuggestion,
     fetchSuggestions,
@@ -54,14 +57,27 @@ export default function HomeScreen() {
 
   const [bannerMessage, setBannerMessage] = useState<string | null>(null);
   const [bannerMode, setBannerMode] = useState<LampyMode>('HYPE');
+  const [pendingReward, setPendingReward] = useState<Reward | null>(null);
+  const [showRewardModal, setShowRewardModal] = useState(false);
 
   // Fetch data on mount + setup notifications
   useEffect(() => {
     fetchTasks();
     fetchTodayCheckin();
     fetchSuggestions();
+    fetchRewards();
     setupPermissions();
-  }, [fetchTasks, fetchTodayCheckin, fetchSuggestions]);
+  }, [fetchTasks, fetchTodayCheckin, fetchSuggestions, fetchRewards]);
+
+  // Handle task completion with reward
+  const handleComplete = async (taskId: string) => {
+    await markComplete(taskId);
+    const reward = await rewardTaskComplete(taskId);
+    if (reward) {
+      setPendingReward(reward);
+      setShowRewardModal(true);
+    }
+  };
 
   // Generate a suggestion once energy is checked in
   useEffect(() => {
@@ -276,7 +292,7 @@ export default function HomeScreen() {
                 key={task.id}
                 task={task}
                 theme={theme}
-                onComplete={markComplete}
+                onComplete={handleComplete}
                 onSkip={markSkipped}
               />
             ))
@@ -318,6 +334,17 @@ export default function HomeScreen() {
         userName={user?.name}
         onSubmit={handleEnergySubmit}
         onDismiss={() => setShowEnergyCheckin(false)}
+      />
+
+      {/* Reward Celebration Modal */}
+      <RewardModal
+        visible={showRewardModal}
+        reward={pendingReward}
+        theme={theme}
+        onDismiss={() => {
+          setShowRewardModal(false);
+          setPendingReward(null);
+        }}
       />
     </View>
   );
