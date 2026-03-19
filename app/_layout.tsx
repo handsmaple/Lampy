@@ -2,11 +2,12 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { useFonts } from 'expo-font';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/components/useColorScheme';
 import { useUserStore } from '@/store/userStore';
+import { supabase } from '@/lib/supabase';
 
 export {
   ErrorBoundary,
@@ -44,24 +45,67 @@ function RootLayoutNav() {
   const colorScheme = useColorScheme();
   const isAuthenticated = useUserStore((s) => s.isAuthenticated);
   const isOnboarded = useUserStore((s) => s.isOnboarded);
+  const setUser = useUserStore((s) => s.setUser);
+  const clearUser = useUserStore((s) => s.clearUser);
+  const setOnboarded = useUserStore((s) => s.setOnboarded);
   const router = useRouter();
   const segments = useSegments();
+  const [authReady, setAuthReady] = useState(false);
+
+  // Restore session on app launch + listen for auth changes
+  useEffect(() => {
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        // Fetch user profile from our users table
+        supabase
+          .from('users')
+          .select('*')
+          .eq('id', session.user.id)
+          .single()
+          .then(({ data }) => {
+            if (data) {
+              setUser(data);
+              setOnboarded(true);
+            }
+            setAuthReady(true);
+          });
+      } else {
+        setAuthReady(true);
+      }
+    });
+
+    // Listen for sign-in / sign-out events
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === 'SIGNED_OUT' || !session) {
+          clearUser();
+        }
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   // Auth routing: redirect based on auth + onboarding state
   useEffect(() => {
+    if (!authReady) return; // Wait for session restore
+
     const inAuthGroup = segments[0] === '(auth)';
 
     if (!isAuthenticated && !inAuthGroup) {
-      // Not logged in → go to login
       router.replace('/(auth)/login' as any);
     } else if (isAuthenticated && !isOnboarded && !inAuthGroup) {
-      // Logged in but not onboarded → go to onboarding
       router.replace('/(auth)/onboarding' as any);
     } else if (isAuthenticated && isOnboarded && inAuthGroup) {
-      // Fully set up → go to home
       router.replace('/(tabs)' as any);
     }
-  }, [isAuthenticated, isOnboarded, segments]);
+  }, [isAuthenticated, isOnboarded, segments, authReady]);
+
+  // Don't render until auth state is known
+  if (!authReady) {
+    return null;
+  }
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>

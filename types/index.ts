@@ -63,6 +63,7 @@ export interface User {
   total_points: number;
   longest_streak: number;
   current_streak: number;
+  last_streak_date?: string; // ISO date "YYYY-MM-DD"
 }
 
 export interface Task {

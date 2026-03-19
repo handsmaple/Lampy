@@ -8,6 +8,7 @@ import { useCallback } from 'react';
 import { Alert } from 'react-native';
 import { useUserStore } from '@/store/userStore';
 import { supabase } from '@/lib/supabase';
+import { getLocalToday } from '@/lib/date';
 import type { EnergyCheckin, EnergyLevel } from '@/types';
 
 export function useEnergy() {
@@ -16,15 +17,14 @@ export function useEnergy() {
   const setTodayCheckin = useUserStore((s) => s.setTodayCheckin);
   const setShowEnergyCheckin = useUserStore((s) => s.setShowEnergyCheckin);
 
-  const today = new Date().toISOString().split('T')[0];
-
-  // Check if user already did today's check-in
-  const hasCheckedInToday = todayCheckin?.date === today;
+  // Check if user already did today's check-in (fresh each render)
+  const hasCheckedInToday = todayCheckin?.date === getLocalToday();
 
   // Fetch today's check-in from Supabase (called on app load)
   const fetchTodayCheckin = useCallback(async () => {
     if (!user) return;
 
+    const today = getLocalToday();
     const { data, error } = await supabase
       .from('energy_checkins')
       .select('*')
@@ -38,13 +38,14 @@ export function useEnergy() {
       // No check-in today → show the prompt
       setShowEnergyCheckin(true);
     }
-  }, [user, today, setTodayCheckin, setShowEnergyCheckin]);
+  }, [user, setTodayCheckin, setShowEnergyCheckin]);
 
   // Submit today's energy level
   const submitCheckin = useCallback(
     async (level: EnergyLevel) => {
       if (!user) return;
 
+      const today = getLocalToday();
       const checkin: EnergyCheckin = {
         id: crypto.randomUUID?.() ?? `checkin-${Date.now()}`,
         user_id: user.id,
@@ -62,7 +63,7 @@ export function useEnergy() {
         Alert.alert('Error', 'Failed to save your energy check-in.');
       }
     },
-    [user, today, setTodayCheckin]
+    [user, setTodayCheckin]
   );
 
   // Determine if we should show the morning prompt
