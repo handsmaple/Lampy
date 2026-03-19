@@ -9,6 +9,7 @@ import { Alert } from 'react-native';
 import { useUserStore } from '@/store/userStore';
 import { supabase } from '@/lib/supabase';
 import { generateSuggestion } from '@/lib/ai';
+import { getLocalToday } from '@/lib/date';
 import type { Suggestion, SuggestionStatus } from '@/types';
 
 export function useSuggestions() {
@@ -20,9 +21,8 @@ export function useSuggestions() {
   const updateSuggestionStatus = useUserStore((s) => s.updateSuggestionStatus);
   const addTask = useUserStore((s) => s.addTask);
 
-  const today = new Date().toISOString().split('T')[0];
-
-  // Check if there's a pending suggestion for today
+  // Check if there's a pending suggestion for today (fresh each render)
+  const today = getLocalToday();
   const todaySuggestion = suggestions.find(
     (s) => s.generated_at.startsWith(today) && s.status === 'PENDING'
   );

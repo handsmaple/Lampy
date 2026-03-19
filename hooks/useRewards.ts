@@ -273,26 +273,47 @@ export function useRewards() {
     [awardPoints]
   );
 
-  // ---- Update streak (called at end of day or on task complete) ----
+  // ---- Update streak (called on task complete) ----
   const updateStreak = useCallback(async () => {
     if (!user) return;
 
-    const today = new Date().toISOString().split('T')[0];
+    // Use local date to avoid timezone issues
+    const now = new Date();
+    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+    // Guard: already counted today
+    if (user.last_streak_date === today) return;
+
     const completedToday = tasks.filter(
       (t) => t.status === 'DONE' && t.completed_at?.startsWith(today)
     );
 
     if (completedToday.length === 0) return;
 
-    // If user completed at least 1 task today, bump streak
-    // We track last_streak_date to avoid double-counting
-    const newStreak = (user.current_streak ?? 0) + 1;
+    // Check if yesterday had activity (streak continuation vs reset)
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
+
+    let newStreak: number;
+    if (user.last_streak_date === yesterdayStr) {
+      // Consecutive day — continue streak
+      newStreak = (user.current_streak ?? 0) + 1;
+    } else if (!user.last_streak_date) {
+      // First ever streak day
+      newStreak = 1;
+    } else {
+      // Missed a day — reset streak
+      newStreak = 1;
+    }
+
     const longestStreak = Math.max(newStreak, user.longest_streak ?? 0);
 
     const updates = {
       ...user,
       current_streak: newStreak,
       longest_streak: longestStreak,
+      last_streak_date: today,
     };
 
     setUser(updates);
@@ -306,6 +327,7 @@ export function useRewards() {
       .update({
         current_streak: newStreak,
         longest_streak: longestStreak,
+        last_streak_date: today,
       })
       .eq('id', user.id);
   }, [user, tasks, setUser, checkStreakMilestone]);
