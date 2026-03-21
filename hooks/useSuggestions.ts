@@ -20,6 +20,7 @@ export function useSuggestions() {
   const setSuggestions = useUserStore((s) => s.setSuggestions);
   const updateSuggestionStatus = useUserStore((s) => s.updateSuggestionStatus);
   const addTask = useUserStore((s) => s.addTask);
+  const showError = useUserStore((s) => s.showErrorToast);
 
   // Check if there's a pending suggestion for today (fresh each render)
   const today = getLocalToday();
@@ -77,6 +78,7 @@ export function useSuggestions() {
     const { error } = await supabase.from('suggestions').insert(suggestion);
     if (error) {
       console.error('Failed to save suggestion:', error);
+      showError('Could not save suggestion');
     }
 
     // Add to local state

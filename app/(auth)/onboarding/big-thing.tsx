@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { StyleSheet, View, Text, TextInput, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useColorScheme } from '@/components/useColorScheme';
+import { OnboardingHeader } from '@/components/onboarding/OnboardingHeader';
 import { Colors, Spacing, Typography, Radius } from '@/constants/theme';
 import { useUserStore } from '@/store/userStore';
 
@@ -41,6 +42,7 @@ export default function OnboardingBigThing() {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
+      <OnboardingHeader step={6} />
       <View style={styles.content}>
         <Text style={[styles.question, { color: theme.text }]}>
           What's one thing you keep putting off?
@@ -93,7 +95,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'space-between',
     paddingHorizontal: Spacing.xl,
-    paddingTop: 120,
+    paddingTop: 0,
     paddingBottom: Spacing.xxl,
   },
   content: {},

@@ -35,8 +35,15 @@ export function useEnergy() {
     if (data && !error) {
       setTodayCheckin(data);
     } else {
-      // No check-in today → show the prompt
-      setShowEnergyCheckin(true);
+      // No check-in today → show prompt only within wake-time window
+      const now = new Date();
+      const currentMinutes = now.getHours() * 60 + now.getMinutes();
+      const [wakeH, wakeM] = (user.wake_time ?? '07:00').split(':').map(Number);
+      const wakeMinutes = wakeH * 60 + wakeM;
+
+      if (currentMinutes >= wakeMinutes && currentMinutes <= wakeMinutes + 120) {
+        setShowEnergyCheckin(true);
+      }
     }
   }, [user, setTodayCheckin, setShowEnergyCheckin]);
 

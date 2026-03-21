@@ -6,6 +6,7 @@
 import { StyleSheet, View, Text, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useColorScheme } from '@/components/useColorScheme';
+import { OnboardingHeader } from '@/components/onboarding/OnboardingHeader';
 import { Colors, Spacing, Typography, Radius } from '@/constants/theme';
 import { useUserStore } from '@/store/userStore';
 import type { LifeSituation } from '@/types';
@@ -30,6 +31,7 @@ export default function OnboardingSituation() {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
+      <OnboardingHeader step={4} />
       <View style={styles.content}>
         <Text style={[styles.question, { color: theme.text }]}>
           What does your week mostly look like?
@@ -56,7 +58,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: Spacing.xl,
-    paddingTop: 120,
+    paddingTop: 0,
     paddingBottom: Spacing.xxl,
   },
   content: {},

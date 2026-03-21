@@ -18,6 +18,7 @@ export function useTasks() {
   const removeTask = useUserStore((s) => s.removeTask);
   const completeTask = useUserStore((s) => s.completeTask);
   const skipTask = useUserStore((s) => s.skipTask);
+  const showError = useUserStore((s) => s.showErrorToast);
 
   // Fetch all tasks for user
   const fetchTasks = useCallback(async () => {
@@ -30,6 +31,7 @@ export function useTasks() {
 
     if (error) {
       console.error('Failed to fetch tasks:', error);
+      showError('Could not load your tasks');
       return;
     }
     if (data) setTasks(data);
@@ -96,6 +98,7 @@ export function useTasks() {
 
       if (error) {
         console.error('Failed to update task:', error);
+        showError('Could not save changes');
         // Refetch to restore state
         fetchTasks();
       }
@@ -115,6 +118,7 @@ export function useTasks() {
 
       if (error) {
         console.error('Failed to undo status change:', error);
+        showError('Could not undo that action');
         fetchTasks();
       }
     },
@@ -129,6 +133,7 @@ export function useTasks() {
       const { error } = await supabase.from('tasks').insert(task);
       if (error) {
         console.error('Failed to restore task:', error);
+        showError('Could not restore the task');
         removeTask(task.id);
       }
     },
@@ -150,6 +155,7 @@ export function useTasks() {
 
       if (error) {
         console.error('Failed to complete task:', error);
+        showError('Could not mark as complete');
         fetchTasks();
       }
     },
@@ -168,6 +174,7 @@ export function useTasks() {
 
       if (error) {
         console.error('Failed to skip task:', error);
+        showError('Could not skip the task');
         fetchTasks();
       }
     },
@@ -182,6 +189,7 @@ export function useTasks() {
       const { error } = await supabase.from('tasks').delete().eq('id', id);
       if (error) {
         console.error('Failed to delete task:', error);
+        showError('Could not delete the task');
         fetchTasks();
       }
     },

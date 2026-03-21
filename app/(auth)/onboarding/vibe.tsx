@@ -6,6 +6,7 @@
 import { StyleSheet, View, Text, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useColorScheme } from '@/components/useColorScheme';
+import { OnboardingHeader } from '@/components/onboarding/OnboardingHeader';
 import { Colors, Spacing, Typography, Radius } from '@/constants/theme';
 import { useUserStore } from '@/store/userStore';
 import type { TonePreference } from '@/types';
@@ -45,6 +46,7 @@ export default function OnboardingVibe() {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
+      <OnboardingHeader step={3} />
       <View style={styles.content}>
         <Text style={[styles.question, { color: theme.text }]}>
           How do you want me to talk to you{name ? `, ${name}` : ''}?
@@ -74,7 +76,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: Spacing.xl,
-    paddingTop: 120,
+    paddingTop: 0,
     paddingBottom: Spacing.xxl,
   },
   content: {},

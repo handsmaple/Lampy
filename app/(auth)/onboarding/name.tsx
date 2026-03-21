@@ -5,6 +5,7 @@
 
 import { useState } from 'react';
 import { StyleSheet, View, Text, TextInput, Pressable, KeyboardAvoidingView, Platform } from 'react-native';
+import { OnboardingHeader } from '@/components/onboarding/OnboardingHeader';
 import { useRouter } from 'expo-router';
 import { useColorScheme } from '@/components/useColorScheme';
 import { Colors, Spacing, Typography, Radius } from '@/constants/theme';
@@ -28,6 +29,7 @@ export default function OnboardingName() {
       style={[styles.container, { backgroundColor: theme.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
+      <OnboardingHeader step={2} />
       <View style={styles.content}>
         <Text style={[styles.question, { color: theme.text }]}>
           What do I call you?
@@ -74,7 +76,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'space-between',
     paddingHorizontal: Spacing.xl,
-    paddingTop: 120,
+    paddingTop: 0,
     paddingBottom: Spacing.xxl,
   },
   content: {},

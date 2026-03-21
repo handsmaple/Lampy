@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { StyleSheet, View, Text, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useColorScheme } from '@/components/useColorScheme';
+import { OnboardingHeader } from '@/components/onboarding/OnboardingHeader';
 import { Colors, Spacing, Typography, Radius } from '@/constants/theme';
 import { useUserStore } from '@/store/userStore';
 import { INTEREST_TAGS, type InterestTag } from '@/types';
@@ -51,6 +52,7 @@ export default function OnboardingInterests() {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
+      <OnboardingHeader step={5} />
       <View style={styles.content}>
         <Text style={[styles.question, { color: theme.text }]}>
           What's actually interesting to you?
@@ -111,7 +113,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'space-between',
     paddingHorizontal: Spacing.xl,
-    paddingTop: 120,
+    paddingTop: 0,
     paddingBottom: Spacing.xxl,
   },
   content: {},
