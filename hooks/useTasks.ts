@@ -103,6 +103,38 @@ export function useTasks() {
     [updateTask, fetchTasks]
   );
 
+  // Revert a task to PENDING (undo complete/skip)
+  const undoStatusChange = useCallback(
+    async (id: string) => {
+      updateTask(id, { status: 'PENDING', completed_at: undefined });
+
+      const { error } = await supabase
+        .from('tasks')
+        .update({ status: 'PENDING', completed_at: null })
+        .eq('id', id);
+
+      if (error) {
+        console.error('Failed to undo status change:', error);
+        fetchTasks();
+      }
+    },
+    [updateTask, fetchTasks]
+  );
+
+  // Restore a deleted task (re-insert)
+  const undoDelete = useCallback(
+    async (task: Task) => {
+      addTask(task);
+
+      const { error } = await supabase.from('tasks').insert(task);
+      if (error) {
+        console.error('Failed to restore task:', error);
+        removeTask(task.id);
+      }
+    },
+    [addTask, removeTask]
+  );
+
   // Complete a task
   const markComplete = useCallback(
     async (id: string) => {
@@ -179,5 +211,7 @@ export function useTasks() {
     markSkipped,
     deleteTask,
     rescheduleTask,
+    undoStatusChange,
+    undoDelete,
   };
 }

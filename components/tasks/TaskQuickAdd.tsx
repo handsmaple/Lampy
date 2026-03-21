@@ -11,6 +11,8 @@ import {
   TextInput,
   Pressable,
   Keyboard,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -70,7 +72,10 @@ export function TaskQuickAdd() {
 
   if (isOpen) {
     return (
-      <View style={[styles.inputContainer, { backgroundColor: theme.card }]}>
+      <KeyboardAvoidingView
+        style={[styles.inputContainer, { backgroundColor: theme.card }]}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
         <View
           style={[
             styles.inputRow,
@@ -104,7 +109,7 @@ export function TaskQuickAdd() {
             <Text style={[styles.addText, { opacity: input.trim() ? 1 : 0.5 }]}>Add</Text>
           </Pressable>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     );
   }
 

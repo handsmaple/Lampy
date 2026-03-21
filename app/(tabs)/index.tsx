@@ -19,13 +19,15 @@ import { LampyBanner } from '@/components/lampy/LampyBanner';
 import { LampyOrb } from '@/components/orb/LampyOrb';
 import { SuggestionCard } from '@/components/suggestions/SuggestionCard';
 import { RewardModal } from '@/components/rewards/RewardModal';
-import { WidgetPreview, WidgetPreviewSmall } from '@/components/widget/WidgetPreview';
 import { generateMessage } from '@/constants/lampy-messages';
 import { useSuggestions } from '@/hooks/useSuggestions';
 import { useNotifications } from '@/hooks/useNotifications';
 import { buildWidgetData, saveWidgetData } from '@/lib/widget-data';
 import { startOfflineSync } from '@/lib/offline-queue';
 import { TaskCardSkeleton } from '@/components/ui/LoadingState';
+import { UndoToast } from '@/components/ui/UndoToast';
+import type { UndoToastState } from '@/components/ui/UndoToast';
+import { getLocalToday } from '@/lib/date';
 import type { WidgetData } from '@/lib/widget-data';
 import type { EnergyLevel, LampyMode, Reward } from '@/types';
 
@@ -47,7 +49,8 @@ export default function HomeScreen() {
   const activeLampyMessage = useUserStore((s) => s.activeLampyMessage);
   const dismissLampyMessage = useUserStore((s) => s.dismissLampyMessage);
 
-  const { fetchTasks, markComplete, markSkipped } = useTasks();
+  const { fetchTasks, markComplete, markSkipped, undoStatusChange } = useTasks();
+  const [undoToast, setUndoToast] = useState<UndoToastState | null>(null);
   const { todayCheckin, fetchTodayCheckin, submitCheckin } = useEnergy();
   const { rewardTaskComplete, fetchRewards } = useRewards();
   const {
@@ -78,13 +81,27 @@ export default function HomeScreen() {
 
   // Handle task completion with reward
   const handleComplete = useCallback(async (taskId: string) => {
+    const taskName = tasks.find((t) => t.id === taskId)?.title ?? 'Task';
     await markComplete(taskId);
+    setUndoToast({
+      message: `"${taskName}" completed`,
+      onUndo: () => undoStatusChange(taskId),
+    });
     const reward = await rewardTaskComplete(taskId);
     if (reward) {
       setPendingReward(reward);
       setShowRewardModal(true);
     }
-  }, [markComplete, rewardTaskComplete]);
+  }, [markComplete, rewardTaskComplete, tasks, undoStatusChange]);
+
+  const handleSkip = useCallback(async (taskId: string) => {
+    const taskName = tasks.find((t) => t.id === taskId)?.title ?? 'Task';
+    await markSkipped(taskId);
+    setUndoToast({
+      message: `"${taskName}" skipped`,
+      onUndo: () => undoStatusChange(taskId),
+    });
+  }, [markSkipped, tasks, undoStatusChange]);
 
   // Generate a suggestion once energy is checked in
   useEffect(() => {
@@ -96,7 +113,7 @@ export default function HomeScreen() {
   // Determine energy level (default to MEDIUM if no check-in)
   const energyLevel: EnergyLevel = todayCheckin?.level ?? 'MEDIUM';
   const taskLimit = TASK_LIMITS[energyLevel];
-  const today = new Date().toISOString().split('T')[0];
+  const today = getLocalToday();
 
   // Memoize today's tasks — energy-aware limiting + sorting
   const { todayTasks, overdueCount } = useMemo(() => {
@@ -149,8 +166,8 @@ export default function HomeScreen() {
         count: tasks.filter((t) => t.status === 'PENDING').length.toString(),
       });
     } else {
-      // Medium — use user's preference
-      mode = tone === 'ROAST' ? 'ROAST' : tone === 'HYPE' ? 'HYPE' : 'HYPE';
+      // Medium energy — pick mode from user's tone preference (BALANCE defaults to HYPE)
+      mode = tone === 'ROAST' ? 'ROAST' : 'HYPE';
       msg = generateMessage(mode, 'CHECKIN', { name: user?.name ?? '' }, intensity);
     }
 
@@ -320,7 +337,7 @@ export default function HomeScreen() {
                 task={task}
                 theme={theme}
                 onComplete={handleComplete}
-                onSkip={markSkipped}
+                onSkip={handleSkip}
               />
             ))
           )}
@@ -350,23 +367,6 @@ export default function HomeScreen() {
           )}
         </View>
 
-        {/* Widget Preview */}
-        {widgetData && (
-          <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>
-              Home Screen Widget
-            </Text>
-            <Text style={[styles.widgetHint, { color: theme.textMuted }]}>
-              Preview of your home screen widget
-            </Text>
-            <View style={styles.widgetPreviewRow}>
-              <View style={styles.widgetMedium}>
-                <WidgetPreview data={widgetData} theme={theme} />
-              </View>
-              <WidgetPreviewSmall data={widgetData} theme={theme} />
-            </View>
-          </View>
-        )}
       </ScrollView>
 
       {/* Floating Add Button */}
@@ -391,6 +391,9 @@ export default function HomeScreen() {
           setPendingReward(null);
         }}
       />
+
+      {/* Undo Toast */}
+      <UndoToast toast={undoToast} onDismiss={() => setUndoToast(null)} />
     </View>
   );
 }
@@ -467,17 +470,5 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: Typography.sizes.sm,
     textAlign: 'center',
-  },
-  widgetHint: {
-    fontSize: Typography.sizes.xs,
-    marginBottom: Spacing.md,
-  },
-  widgetPreviewRow: {
-    flexDirection: 'row',
-    gap: Spacing.md,
-    alignItems: 'flex-start',
-  },
-  widgetMedium: {
-    flex: 1,
   },
 });

@@ -8,6 +8,7 @@ import { StyleSheet, View, Text, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { Colors, Spacing, Typography, Radius } from '@/constants/theme';
+import { getLocalToday, getLocalTomorrow } from '@/lib/date';
 import type { Task } from '@/types';
 import type { ThemeColors } from '@/constants/theme';
 
@@ -31,13 +32,9 @@ export const TaskCard = memo(function TaskCard({ task, theme, onComplete, onSkip
     const parts: string[] = [];
     if (task.due_date) {
       const date = new Date(task.due_date);
-      const today = new Date();
-      const tomorrow = new Date(today);
-      tomorrow.setDate(tomorrow.getDate() + 1);
-
-      if (task.due_date === today.toISOString().split('T')[0]) {
+      if (task.due_date === getLocalToday()) {
         parts.push('Today');
-      } else if (task.due_date === tomorrow.toISOString().split('T')[0]) {
+      } else if (task.due_date === getLocalTomorrow()) {
         parts.push('Tomorrow');
       } else {
         parts.push(
@@ -59,7 +56,7 @@ export const TaskCard = memo(function TaskCard({ task, theme, onComplete, onSkip
   const isOverdue =
     task.due_date &&
     task.status === 'PENDING' &&
-    task.due_date < new Date().toISOString().split('T')[0];
+    task.due_date < getLocalToday();
 
   return (
     <Pressable

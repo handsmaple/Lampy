@@ -20,6 +20,8 @@ import { useProfile } from '@/hooks/useProfile';
 import { InterestPicker } from '@/components/profile/InterestPicker';
 import { SchedulePicker } from '@/components/profile/SchedulePicker';
 import { LampyOrbMini } from '@/components/orb/LampyOrb';
+import { WidgetPreview, WidgetPreviewSmall } from '@/components/widget/WidgetPreview';
+import { buildWidgetData } from '@/lib/widget-data';
 import { useUserStore } from '@/store/userStore';
 import type { InterestTag } from '@/types';
 
@@ -27,6 +29,7 @@ export default function ProfileScreen() {
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme];
   const orbState = useUserStore((s) => s.orbState);
+  const tasks = useUserStore((s) => s.tasks);
 
   const {
     user,
@@ -44,6 +47,15 @@ export default function ProfileScreen() {
   const [showSchedulePicker, setShowSchedulePicker] = useState(false);
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(user?.name ?? '');
+
+  // Widget preview data
+  const widgetData = buildWidgetData(
+    tasks,
+    orbState,
+    user?.current_streak ?? 0,
+    user?.current_orb_level ?? 1,
+    user?.name,
+  );
 
   // Handle name edit
   const handleNameSave = () => {
@@ -338,6 +350,22 @@ export default function ProfileScreen() {
           ACCOUNT
         </Text>
 
+        {/* Widget Preview */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>
+            Home Screen Widget
+          </Text>
+          <Text style={[styles.sectionHint, { color: theme.textMuted }]}>
+            Preview of your home screen widget
+          </Text>
+          <View style={styles.widgetPreviewRow}>
+            <View style={styles.widgetMedium}>
+              <WidgetPreview data={widgetData} theme={theme} />
+            </View>
+            <WidgetPreviewSmall data={widgetData} theme={theme} />
+          </View>
+        </View>
+
         <SettingsRow
           label="Sign out"
           value=""
@@ -630,6 +658,28 @@ const styles = StyleSheet.create({
   },
   settingsRowValue: {
     fontSize: Typography.sizes.sm,
+  },
+
+  // --- Widget Preview ---
+  section: {
+    marginBottom: Spacing.lg,
+    marginTop: Spacing.lg,
+  },
+  sectionTitle: {
+    fontSize: Typography.sizes.lg,
+    fontWeight: Typography.weights.semibold,
+  },
+  sectionHint: {
+    fontSize: Typography.sizes.xs,
+    marginBottom: Spacing.md,
+  },
+  widgetPreviewRow: {
+    flexDirection: 'row',
+    gap: Spacing.md,
+    alignItems: 'flex-start',
+  },
+  widgetMedium: {
+    flex: 1,
   },
 
   // --- Version ---

@@ -7,6 +7,7 @@
 
 import { supabase } from './supabase';
 import { generateMessage } from '@/constants/lampy-messages';
+import { formatLocalDate } from '@/lib/date';
 import type {
   TaskPriority,
   EnergyLevel,
@@ -71,10 +72,10 @@ export function parseTaskInput(input: string): ParsedTask {
   if (/\btomorrow\b/i.test(trimmed)) {
     const tmrw = new Date(today);
     tmrw.setDate(tmrw.getDate() + 1);
-    due_date = tmrw.toISOString().split('T')[0];
+    due_date = formatLocalDate(tmrw);
     title = title.replace(/\btomorrow\b/i, '').trim();
   } else if (/\btoday\b/i.test(trimmed)) {
-    due_date = today.toISOString().split('T')[0];
+    due_date = formatLocalDate(today);
     title = title.replace(/\btoday\b/i, '').trim();
   } else {
     // Check for day names
@@ -86,7 +87,7 @@ export function parseTaskInput(input: string): ParsedTask {
         if (daysAhead <= 0) daysAhead += 7;
         const targetDate = new Date(today);
         targetDate.setDate(today.getDate() + daysAhead);
-        due_date = targetDate.toISOString().split('T')[0];
+        due_date = formatLocalDate(targetDate);
         title = title.replace(regex, '').trim();
         break;
       }
@@ -305,8 +306,8 @@ function determineMode(context: MotivationContext): LampyMode {
   // Low energy → always REAL (gentle)
   if (energy_level === 'LOW') return 'REAL';
 
-  // Overdue → ROAST (if user allows it)
-  if (trigger === 'OVERDUE' && tone_preference !== 'HYPE') return 'ROAST';
+  // Overdue → ROAST (unless user explicitly prefers HYPE)
+  if (trigger === 'OVERDUE' && (tone_preference === 'ROAST' || tone_preference === 'BALANCE')) return 'ROAST';
 
   // Streaks and milestones → HYPE
   if (trigger === 'STREAK' || trigger === 'MILESTONE') return 'HYPE';

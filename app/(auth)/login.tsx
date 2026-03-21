@@ -13,6 +13,7 @@ import {
   Platform,
   ActivityIndicator,
   Alert,
+  SafeAreaView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useColorScheme } from '@/components/useColorScheme';
@@ -113,8 +114,9 @@ export default function LoginScreen() {
   };
 
   return (
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
     <KeyboardAvoidingView
-      style={[styles.container, { backgroundColor: theme.background }]}
+      style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <View style={styles.content}>
@@ -190,6 +192,7 @@ export default function LoginScreen() {
         </Pressable>
       </View>
     </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 

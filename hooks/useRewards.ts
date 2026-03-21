@@ -8,6 +8,7 @@ import { useCallback, useRef } from 'react';
 import { useUserStore } from '@/store/userStore';
 import { supabase } from '@/lib/supabase';
 import type { Reward, RewardType, Unlockable, UserUnlockable } from '@/types';
+import { getLocalToday, formatLocalDate } from '@/lib/date';
 
 // =============================================
 // Points Configuration
@@ -218,7 +219,7 @@ export function useRewards() {
       }
 
       // First task of the day bonus
-      const today = new Date().toISOString().split('T')[0];
+      const today = getLocalToday();
       if (firstTaskRewardedToday.current !== today) {
         const completedToday = tasks.filter(
           (t) => t.status === 'DONE' && t.completed_at?.startsWith(today)
@@ -277,9 +278,7 @@ export function useRewards() {
   const updateStreak = useCallback(async () => {
     if (!user) return;
 
-    // Use local date to avoid timezone issues
-    const now = new Date();
-    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const today = getLocalToday();
 
     // Guard: already counted today
     if (user.last_streak_date === today) return;
@@ -291,9 +290,9 @@ export function useRewards() {
     if (completedToday.length === 0) return;
 
     // Check if yesterday had activity (streak continuation vs reset)
-    const yesterday = new Date(now);
+    const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
+    const yesterdayStr = formatLocalDate(yesterday);
 
     let newStreak: number;
     if (user.last_streak_date === yesterdayStr) {

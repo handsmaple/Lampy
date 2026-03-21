@@ -6,10 +6,12 @@
 import { useState } from 'react';
 import { StyleSheet, View, Text, ScrollView, Pressable, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useColorScheme } from '@/components/useColorScheme';
 import { Colors, Spacing, Typography, Radius } from '@/constants/theme';
 import { useTasks } from '@/hooks/useTasks';
 import { useUserStore } from '@/store/userStore';
+import { getLocalToday, getLocalTomorrow, formatLocalDate } from '@/lib/date';
 
 const PRIORITY_COLORS = {
   HIGH: '#EF4444',
@@ -29,6 +31,7 @@ export default function TaskDetail() {
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme];
   const { markComplete, markSkipped, deleteTask, rescheduleTask } = useTasks();
+  const insets = useSafeAreaInsets();
 
   const task = useUserStore((s) => s.tasks.find((t) => t.id === id));
 
@@ -55,7 +58,7 @@ export default function TaskDetail() {
   const isOverdue =
     task.due_date &&
     isPending &&
-    task.due_date < new Date().toISOString().split('T')[0];
+    task.due_date < getLocalToday();
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -103,16 +106,13 @@ export default function TaskDetail() {
 
   const handleReschedule = () => {
     // Simple reschedule to tomorrow
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const newDate = tomorrow.toISOString().split('T')[0];
-    rescheduleTask(task.id, newDate);
+    rescheduleTask(task.id, getLocalTomorrow());
   };
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, { paddingTop: insets.top + Spacing.lg }]}
         showsVerticalScrollIndicator={false}
       >
         {/* Back button */}
@@ -314,7 +314,6 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: Spacing.lg,
-    paddingTop: 60,
     paddingBottom: 140,
   },
   backBtn: {

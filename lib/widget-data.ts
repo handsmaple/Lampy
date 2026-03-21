@@ -7,6 +7,7 @@
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { Task, OrbState } from '@/types';
+import { getLocalToday } from '@/lib/date';
 
 // --- Widget Data Shape ---
 
@@ -37,7 +38,7 @@ export function buildWidgetData(
   level: number,
   userName?: string
 ): WidgetData {
-  const today = new Date().toISOString().split('T')[0];
+  const today = getLocalToday();
 
   // Get top 3 pending tasks (overdue first → priority → due date)
   const topTasks = tasks
