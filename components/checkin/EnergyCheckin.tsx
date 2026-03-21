@@ -11,8 +11,8 @@ import {
   Text,
   Pressable,
   Modal,
-  Animated,
 } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { Colors, Spacing, Typography, Radius } from '@/constants/theme';
 import type { ThemeColors } from '@/constants/theme';
 import type { EnergyLevel } from '@/types';
@@ -66,6 +66,7 @@ export function EnergyCheckinModal({
 
   const handleSelect = (level: EnergyLevel) => {
     setSelected(level);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     // Small delay so user sees the selection highlight
     setTimeout(() => {
       onSubmit(level);

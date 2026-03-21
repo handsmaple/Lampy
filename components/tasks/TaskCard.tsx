@@ -6,6 +6,7 @@
 import { memo } from 'react';
 import { StyleSheet, View, Text, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
+import * as Haptics from 'expo-haptics';
 import { Colors, Spacing, Typography, Radius } from '@/constants/theme';
 import type { Task } from '@/types';
 import type { ThemeColors } from '@/constants/theme';
@@ -84,7 +85,12 @@ export const TaskCard = memo(function TaskCard({ task, theme, onComplete, onSkip
               backgroundColor: isDone ? Colors.brand.primary : 'transparent',
             },
           ]}
-          onPress={() => !isDone && onComplete(task.id)}
+          onPress={() => {
+            if (!isDone) {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              onComplete(task.id);
+            }
+          }}
           accessibilityRole="checkbox"
           accessibilityState={{ checked: isDone }}
           accessibilityLabel={`Mark ${task.title} as complete`}

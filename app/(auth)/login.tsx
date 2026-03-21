@@ -61,6 +61,7 @@ export default function LoginScreen() {
             total_points: 0,
             longest_streak: 0,
             current_streak: 0,
+            roast_intensity: 'MEDIUM',
           });
           setOnboarded(false);
           router.replace('/(auth)/onboarding' as any);
@@ -97,6 +98,7 @@ export default function LoginScreen() {
               total_points: 0,
               longest_streak: 0,
               current_streak: 0,
+              roast_intensity: 'MEDIUM',
             });
             setOnboarded(false);
             router.replace('/(auth)/onboarding' as any);

@@ -4,8 +4,15 @@
 // Slides in from top of Home screen with a
 // personality-driven message. Auto-dismisses after 5s.
 
-import { useEffect, useRef } from 'react';
-import { StyleSheet, View, Text, Pressable, Animated } from 'react-native';
+import { useEffect, useRef, useCallback } from 'react';
+import { StyleSheet, View, Text, Pressable } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withTiming,
+  runOnJS,
+} from 'react-native-reanimated';
 import { Colors, Spacing, Typography, Radius } from '@/constants/theme';
 import type { ThemeColors } from '@/constants/theme';
 import type { LampyMode } from '@/types';
@@ -31,62 +38,38 @@ export function LampyBanner({
   onDismiss,
   autoDismissMs = 5000,
 }: LampyBannerProps) {
-  const slideAnim = useRef(new Animated.Value(-120)).current;
-  const opacityAnim = useRef(new Animated.Value(0)).current;
+  const translateY = useSharedValue(-120);
+  const opacity = useSharedValue(0);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const config = MODE_CONFIG[mode];
 
+  const dismiss = useCallback(() => {
+    translateY.value = withTiming(-120, { duration: 250 });
+    opacity.value = withTiming(0, { duration: 200 }, (finished) => {
+      if (finished) runOnJS(onDismiss)();
+    });
+  }, [onDismiss]);
+
   useEffect(() => {
     // Slide in
-    Animated.parallel([
-      Animated.spring(slideAnim, {
-        toValue: 0,
-        useNativeDriver: true,
-        tension: 50,
-        friction: 8,
-      }),
-      Animated.timing(opacityAnim, {
-        toValue: 1,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-    ]).start();
+    translateY.value = withSpring(0, { damping: 12, stiffness: 100 });
+    opacity.value = withTiming(1, { duration: 200 });
 
     // Auto-dismiss
-    const timer = setTimeout(() => {
-      dismiss();
-    }, autoDismissMs);
-
-    return () => clearTimeout(timer);
+    timerRef.current = setTimeout(dismiss, autoDismissMs);
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
   }, []);
 
-  const dismiss = () => {
-    Animated.parallel([
-      Animated.timing(slideAnim, {
-        toValue: -120,
-        duration: 250,
-        useNativeDriver: true,
-      }),
-      Animated.timing(opacityAnim, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
-      onDismiss();
-    });
-  };
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: translateY.value }],
+    opacity: opacity.value,
+  }));
 
   return (
-    <Animated.View
-      style={[
-        styles.container,
-        {
-          transform: [{ translateY: slideAnim }],
-          opacity: opacityAnim,
-        },
-      ]}
-    >
+    <Animated.View style={[styles.container, animatedStyle]}>
       <Pressable
         style={[
           styles.banner,

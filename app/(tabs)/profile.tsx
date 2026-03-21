@@ -23,9 +23,6 @@ import { LampyOrbMini } from '@/components/orb/LampyOrb';
 import { useUserStore } from '@/store/userStore';
 import type { InterestTag } from '@/types';
 
-// --- Roast intensity labels ---
-type RoastIntensity = 'MILD' | 'MEDIUM' | 'SPICY';
-
 export default function ProfileScreen() {
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme];
@@ -38,6 +35,7 @@ export default function ProfileScreen() {
     setSchedule,
     setName,
     setLifeSituation,
+    setRoastIntensity,
     signOut,
   } = useProfile();
 
@@ -46,9 +44,6 @@ export default function ProfileScreen() {
   const [showSchedulePicker, setShowSchedulePicker] = useState(false);
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(user?.name ?? '');
-
-  // Roast intensity (stored as local preference for now)
-  const [roastIntensity, setRoastIntensity] = useState<RoastIntensity>('MEDIUM');
 
   // Handle name edit
   const handleNameSave = () => {
@@ -298,7 +293,7 @@ export default function ProfileScreen() {
                 { key: 'SPICY', label: 'Spicy', emoji: '🌶️' },
               ] as const
             ).map((level) => {
-              const isActive = roastIntensity === level.key;
+              const isActive = (user?.roast_intensity ?? 'MEDIUM') === level.key;
               return (
                 <Pressable
                   key={level.key}

@@ -135,6 +135,7 @@ export default function HomeScreen() {
 
     // Generate a Lampy message based on energy level
     const tone = user?.tone_preference ?? 'BALANCE';
+    const intensity = user?.roast_intensity ?? 'MEDIUM';
     let mode: LampyMode;
     let msg: string;
 
@@ -150,7 +151,7 @@ export default function HomeScreen() {
     } else {
       // Medium — use user's preference
       mode = tone === 'ROAST' ? 'ROAST' : tone === 'HYPE' ? 'HYPE' : 'HYPE';
-      msg = generateMessage(mode, 'CHECKIN', { name: user?.name ?? '' });
+      msg = generateMessage(mode, 'CHECKIN', { name: user?.name ?? '' }, intensity);
     }
 
     setBannerMessage(msg);
@@ -174,7 +175,7 @@ export default function HomeScreen() {
             task: mostOverdue.title,
             days: daysOverdue,
             times: mostOverdue.times_rescheduled,
-          });
+          }, user?.roast_intensity ?? 'MEDIUM');
           setBannerMessage(msg);
           setBannerMode('ROAST');
         }

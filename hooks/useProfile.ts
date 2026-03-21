@@ -7,7 +7,7 @@ import { useCallback } from 'react';
 import { Alert } from 'react-native';
 import { useUserStore } from '@/store/userStore';
 import { supabase } from '@/lib/supabase';
-import type { TonePreference, InterestTag, LifeSituation } from '@/types';
+import type { TonePreference, InterestTag, LifeSituation, RoastIntensity } from '@/types';
 
 export function useProfile() {
   const user = useUserStore((s) => s.user);
@@ -23,6 +23,7 @@ export function useProfile() {
       interests: InterestTag[];
       wake_time: string;
       sleep_time: string;
+      roast_intensity: RoastIntensity;
     }>) => {
       if (!user) return false;
 
@@ -78,6 +79,12 @@ export function useProfile() {
     [updateProfile]
   );
 
+  // Update roast intensity
+  const setRoastIntensity = useCallback(
+    (roast_intensity: RoastIntensity) => updateProfile({ roast_intensity }),
+    [updateProfile]
+  );
+
   // Sign out
   const signOut = useCallback(async () => {
     const { error } = await supabase.auth.signOut();
@@ -97,6 +104,7 @@ export function useProfile() {
     setSchedule,
     setName,
     setLifeSituation,
+    setRoastIntensity,
     signOut,
   };
 }

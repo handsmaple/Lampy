@@ -10,8 +10,8 @@ import {
   View,
   Text,
   Pressable,
-  Animated,
 } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { Colors, Spacing, Typography, Radius } from '@/constants/theme';
 import type { ThemeColors } from '@/constants/theme';
 import type { Suggestion } from '@/types';
@@ -51,6 +51,7 @@ export function SuggestionCard({
   const emoji = CATEGORY_EMOJIS[suggestion.category] ?? '💡';
 
   const handleAccept = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setResponding(true);
     onAccept(suggestion.id);
   };
