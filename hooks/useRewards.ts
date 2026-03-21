@@ -97,6 +97,7 @@ export function useRewards() {
   const setUnlocked = useUserStore((s) => s.setUnlocked);
   const addUnlocked = useUserStore((s) => s.addUnlocked);
   const tasks = useUserStore((s) => s.tasks);
+  const showError = useUserStore((s) => s.showErrorToast);
 
   // Track if we've already rewarded the first task today
   const firstTaskRewardedToday = useRef<string | null>(null);
@@ -114,6 +115,7 @@ export function useRewards() {
 
     if (error) {
       console.error('Failed to fetch rewards:', error);
+      showError('Could not load rewards');
       return;
     }
     if (data) setRewards(data);
@@ -130,6 +132,7 @@ export function useRewards() {
 
     if (error) {
       console.error('Failed to fetch unlockables:', error);
+      showError('Could not load unlockables');
       return;
     }
     if (data) setUnlocked(data);
@@ -194,6 +197,7 @@ export function useRewards() {
       const { error } = await supabase.from('rewards').insert(reward);
       if (error) {
         console.error('Failed to save reward:', error);
+        showError('Could not save reward');
       }
 
       return reward;

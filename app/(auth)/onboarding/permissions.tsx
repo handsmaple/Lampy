@@ -8,6 +8,7 @@ import { StyleSheet, View, Text, Pressable, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as Notifications from 'expo-notifications';
 import { useColorScheme } from '@/components/useColorScheme';
+import { OnboardingHeader } from '@/components/onboarding/OnboardingHeader';
 import { Colors, Spacing, Typography, Radius } from '@/constants/theme';
 import { useUserStore } from '@/store/userStore';
 import { supabase } from '@/lib/supabase';
@@ -111,6 +112,7 @@ export default function OnboardingPermissions() {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
+      <OnboardingHeader step={7} />
       <View style={styles.content}>
         <Text style={[styles.question, { color: theme.text }]}>
           Almost done.
@@ -206,7 +208,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'space-between',
     paddingHorizontal: Spacing.xl,
-    paddingTop: 100,
+    paddingTop: 0,
     paddingBottom: Spacing.xxl,
   },
   content: {},

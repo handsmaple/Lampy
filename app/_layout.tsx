@@ -8,6 +8,7 @@ import 'react-native-reanimated';
 import { useColorScheme } from '@/components/useColorScheme';
 import { useUserStore } from '@/store/userStore';
 import { supabase } from '@/lib/supabase';
+import { ErrorToast } from '@/components/ui/ErrorToast';
 
 export {
   ErrorBoundary,
@@ -115,6 +116,7 @@ function RootLayoutNav() {
         <Stack.Screen name="(auth)/onboarding" options={{ headerShown: false }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
       </Stack>
+      <ErrorToast />
     </ThemeProvider>
   );
 }

@@ -45,6 +45,7 @@ interface UserState {
   orbState: OrbState;
   showEnergyCheckin: boolean;
   activeLampyMessage: LampyMessage | null;
+  errorToast: string | null;
 
   // --- Auth Actions ---
   setUser: (user: User) => void;
@@ -86,6 +87,10 @@ interface UserState {
   setUnlocked: (unlocked: UserUnlockable[]) => void;
   addUnlocked: (unlockable: UserUnlockable) => void;
 
+  // --- Error Toast ---
+  showErrorToast: (message: string) => void;
+  dismissErrorToast: () => void;
+
   // --- Computed Helpers ---
   getTodayTasks: () => Task[];
   getPendingTasks: () => Task[];
@@ -109,6 +114,7 @@ export const useUserStore = create<UserState>((set, get) => ({
   orbState: 'IDLE',
   showEnergyCheckin: false,
   activeLampyMessage: null,
+  errorToast: null,
 
   // --- Auth Actions ---
   setUser: (user) => set({ user, isAuthenticated: true }),
@@ -189,6 +195,10 @@ export const useUserStore = create<UserState>((set, get) => ({
   addUnlocked: (unlockable) => set((state) => ({
     unlocked: [...state.unlocked, unlockable],
   })),
+
+  // --- Error Toast ---
+  showErrorToast: (message) => set({ errorToast: message }),
+  dismissErrorToast: () => set({ errorToast: null }),
 
   // --- Computed Helpers ---
   getTodayTasks: () => {
