@@ -7,6 +7,7 @@
 
 import { useEffect, useState } from 'react';
 import { StyleSheet, View, Text, Modal, Pressable } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -41,6 +42,8 @@ export function RewardModal({ visible, reward, theme, onDismiss }: RewardModalPr
 
   useEffect(() => {
     if (visible && reward) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+
       // Reset
       scale.value = 0;
       opacity.value = 0;

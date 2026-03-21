@@ -10,9 +10,14 @@ import {
   Text,
   TextInput,
   Pressable,
-  Animated,
   Keyboard,
 } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSequence,
+  withTiming,
+} from 'react-native-reanimated';
 import { useColorScheme } from '@/components/useColorScheme';
 import { Colors, Spacing, Typography, Radius, Shadows } from '@/constants/theme';
 import { useTasks } from '@/hooks/useTasks';
@@ -25,7 +30,7 @@ export function TaskQuickAdd() {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
   const inputRef = useRef<TextInput>(null);
-  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const scale = useSharedValue(1);
 
   const handleOpen = () => {
     setIsOpen(true);
@@ -53,19 +58,15 @@ export function TaskQuickAdd() {
     handleClose();
 
     // Quick bounce animation
-    Animated.sequence([
-      Animated.timing(scaleAnim, {
-        toValue: 1.2,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-      Animated.timing(scaleAnim, {
-        toValue: 1,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-    ]).start();
+    scale.value = withSequence(
+      withTiming(1.2, { duration: 100 }),
+      withTiming(1, { duration: 100 }),
+    );
   };
+
+  const fabAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
 
   if (isOpen) {
     return (
@@ -108,7 +109,7 @@ export function TaskQuickAdd() {
   }
 
   return (
-    <Animated.View style={[styles.fabContainer, { transform: [{ scale: scaleAnim }] }]}>
+    <Animated.View style={[styles.fabContainer, fabAnimatedStyle]}>
       <Pressable
         style={[styles.fab, Shadows.lg, { backgroundColor: Colors.brand.primary }]}
         onPress={handleOpen}

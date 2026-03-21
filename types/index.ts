@@ -22,6 +22,8 @@ export type RewardType = 'STREAK' | 'TASK_COMPLETE' | 'MILESTONE' | 'SUGGESTION_
 
 export type UnlockableType = 'THEME' | 'ORB_SKIN' | 'VOICE_MODE';
 
+export type RoastIntensity = 'MILD' | 'MEDIUM' | 'SPICY';
+
 export type LampyMode = 'ROAST' | 'HYPE' | 'REAL';
 
 export type LampyTrigger = 'OVERDUE' | 'STREAK' | 'INACTIVITY' | 'CHECKIN' | 'MILESTONE';
@@ -64,6 +66,7 @@ export interface User {
   longest_streak: number;
   current_streak: number;
   last_streak_date?: string; // ISO date "YYYY-MM-DD"
+  roast_intensity: RoastIntensity;
 }
 
 export interface Task {
