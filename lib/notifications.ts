@@ -8,6 +8,7 @@
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import { Platform } from 'react-native';
+import { getLocalToday } from '@/lib/date';
 import { generateMotivation } from './ai';
 import type {
   EnergyLevel,
@@ -189,7 +190,7 @@ export async function evaluateAndScheduleNotifications(
   // Cancel existing scheduled notifications to avoid duplicates
   await cancelAllNotifications();
 
-  const today = new Date().toISOString().split('T')[0];
+  const today = getLocalToday();
   const pendingTasks = context.tasks.filter((t) => t.status === 'PENDING');
   const overdueTasks = pendingTasks.filter(
     (t) => t.due_date && t.due_date < today

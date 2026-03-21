@@ -13,8 +13,10 @@ import {
   Pressable,
   Alert,
   Platform,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useColorScheme } from '@/components/useColorScheme';
 import { Colors, Spacing, Typography, Radius } from '@/constants/theme';
 import { useTasks } from '@/hooks/useTasks';
@@ -34,6 +36,7 @@ export default function EditTask() {
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme];
   const { editTask, deleteTask } = useTasks();
+  const insets = useSafeAreaInsets();
 
   const task = useUserStore((s) => s.tasks.find((t) => t.id === id));
 
@@ -114,9 +117,12 @@ export default function EditTask() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.background }]}>
+    <KeyboardAvoidingView
+      style={[styles.container, { backgroundColor: theme.background }]}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, { paddingTop: insets.top + Spacing.lg }]}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
@@ -255,7 +261,7 @@ export default function EditTask() {
           <Text style={styles.deleteText}>🗑 Delete this task</Text>
         </Pressable>
       </ScrollView>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -265,7 +271,6 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: Spacing.lg,
-    paddingTop: 60,
     paddingBottom: 100,
   },
   header: {

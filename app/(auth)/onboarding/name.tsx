@@ -4,7 +4,7 @@
 // "What do I call you?"
 
 import { useState } from 'react';
-import { StyleSheet, View, Text, TextInput, Pressable } from 'react-native';
+import { StyleSheet, View, Text, TextInput, Pressable, KeyboardAvoidingView, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useColorScheme } from '@/components/useColorScheme';
 import { Colors, Spacing, Typography, Radius } from '@/constants/theme';
@@ -24,7 +24,10 @@ export default function OnboardingName() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.background }]}>
+    <KeyboardAvoidingView
+      style={[styles.container, { backgroundColor: theme.background }]}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
       <View style={styles.content}>
         <Text style={[styles.question, { color: theme.text }]}>
           What do I call you?
@@ -62,7 +65,7 @@ export default function OnboardingName() {
           Next
         </Text>
       </Pressable>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 

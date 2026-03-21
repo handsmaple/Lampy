@@ -5,6 +5,7 @@
 // suggestions, rewards, and Lampy messages.
 
 import { create } from 'zustand';
+import { getLocalToday } from '@/lib/date';
 import type {
   User,
   Task,
@@ -191,7 +192,7 @@ export const useUserStore = create<UserState>((set, get) => ({
 
   // --- Computed Helpers ---
   getTodayTasks: () => {
-    const today = new Date().toISOString().split('T')[0];
+    const today = getLocalToday();
     return get().tasks.filter(
       (t) => t.status === 'PENDING' && t.due_date === today
     );

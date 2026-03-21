@@ -8,9 +8,12 @@ import { StyleSheet, View, Text, ScrollView, Pressable } from 'react-native';
 import { useColorScheme } from '@/components/useColorScheme';
 import { Colors, Spacing, Typography, Radius } from '@/constants/theme';
 import { useUserStore } from '@/store/userStore';
+import { getLocalToday } from '@/lib/date';
 import { useTasks } from '@/hooks/useTasks';
 import { TaskCard } from '@/components/tasks/TaskCard';
 import { TaskQuickAdd } from '@/components/tasks/TaskQuickAdd';
+import { UndoToast } from '@/components/ui/UndoToast';
+import type { UndoToastState } from '@/components/ui/UndoToast';
 
 type FilterTab = 'ALL' | 'PENDING' | 'DONE' | 'SKIPPED';
 
@@ -25,8 +28,27 @@ export default function TasksScreen() {
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme];
   const tasks = useUserStore((s) => s.tasks);
-  const { fetchTasks, markComplete, markSkipped } = useTasks();
+  const { fetchTasks, markComplete, markSkipped, undoStatusChange } = useTasks();
   const [filter, setFilter] = useState<FilterTab>('ALL');
+  const [undoToast, setUndoToast] = useState<UndoToastState | null>(null);
+
+  const handleComplete = (taskId: string) => {
+    const taskName = tasks.find((t) => t.id === taskId)?.title ?? 'Task';
+    markComplete(taskId);
+    setUndoToast({
+      message: `"${taskName}" completed`,
+      onUndo: () => undoStatusChange(taskId),
+    });
+  };
+
+  const handleSkip = (taskId: string) => {
+    const taskName = tasks.find((t) => t.id === taskId)?.title ?? 'Task';
+    markSkipped(taskId);
+    setUndoToast({
+      message: `"${taskName}" skipped`,
+      onUndo: () => undoStatusChange(taskId),
+    });
+  };
 
   // Fetch tasks on mount
   useEffect(() => {
@@ -47,7 +69,7 @@ export default function TasksScreen() {
 
     // Within pending: overdue first, then by due date
     if (a.status === 'PENDING' && b.status === 'PENDING') {
-      const today = new Date().toISOString().split('T')[0];
+      const today = getLocalToday();
       const aOverdue = a.due_date && a.due_date < today;
       const bOverdue = b.due_date && b.due_date < today;
       if (aOverdue && !bOverdue) return -1;
@@ -134,8 +156,8 @@ export default function TasksScreen() {
               key={task.id}
               task={task}
               theme={theme}
-              onComplete={markComplete}
-              onSkip={markSkipped}
+              onComplete={handleComplete}
+              onSkip={handleSkip}
             />
           ))
         )}
@@ -143,6 +165,9 @@ export default function TasksScreen() {
 
       {/* Floating Add Button */}
       <TaskQuickAdd />
+
+      {/* Undo Toast */}
+      <UndoToast toast={undoToast} onDismiss={() => setUndoToast(null)} />
     </View>
   );
 }

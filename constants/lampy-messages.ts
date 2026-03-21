@@ -143,13 +143,6 @@ const HYPE_MILESTONE: string[] = [
   "Something new just unlocked. Go see what you earned.",
 ];
 
-const HYPE_TASK_COMPLETE: string[] = [
-  "Done. One less thing haunting you.",
-  "Checked off {{task}}. Keep that energy.",
-  "{{task}} — handled. What's next?",
-  "That's {{count}} today. You're on a roll.",
-];
-
 const HYPE_CHECKIN: string[] = [
   "New day, new chance to crush it. Let's go, {{name}}.",
   "Morning, {{name}}. I can already tell today's going to be good.",
@@ -180,7 +173,7 @@ const REAL_CHECKIN: string[] = [
   "Take a breath first. Then we'll figure out today.",
 ];
 
-const REAL_LOW_ENERGY: string[] = [
+const REAL_INACTIVITY: string[] = [
   "Rough day? One small thing. That's all.",
   "Low energy noted. Just pick the easiest thing on your list.",
   "Not every day has to be productive. But one tiny win helps.",
@@ -240,7 +233,7 @@ export const MESSAGE_TEMPLATES: MessageTemplate[] = [
 
   // Real — all triggers
   { mode: 'REAL', trigger: 'CHECKIN', templates: REAL_CHECKIN },
-  { mode: 'REAL', trigger: 'INACTIVITY', templates: REAL_LOW_ENERGY },
+  { mode: 'REAL', trigger: 'INACTIVITY', templates: REAL_INACTIVITY },
   { mode: 'REAL', trigger: 'STREAK', templates: REAL_STREAK },
   { mode: 'REAL', trigger: 'MILESTONE', templates: REAL_MILESTONE },
   { mode: 'REAL', trigger: 'OVERDUE', templates: REAL_OVERDUE },
